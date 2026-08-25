@@ -5,8 +5,8 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel, Field
-from .core import *
-from .web import frontend
+from core import *
+from web import frontend
 
 app=FastAPI(title='SudanCare Network', version='0.1.0', docs_url='/api/docs')
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv('SUDANCARE_ALLOWED_ORIGINS','http://localhost:8080').split(','), allow_credentials=True, allow_methods=['GET','POST'], allow_headers=['content-type'])
