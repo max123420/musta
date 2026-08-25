@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sudancare-pilot
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: SUDANCARE_MODE
+        value: clinic
+      - key: SUDANCARE_DB_PATH
+        value: /tmp/sudancare.db
+      - key: SUDANCARE_SECRET
+        generateValue: true
