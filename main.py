@@ -22,20 +22,11 @@ async def security_headers(request:Request, call_next):
 def startup():
     init_db()
     if os.getenv('SUDANCARE_DEMO_ACCOUNTS','1') == '1':
-        demo_accounts = [
-            ('admin', 'SudanCareAdmin2026!', 'clinic_admin'),
-            ('reception', 'SudanCareReception2026!', 'receptionist'),
-            ('nurse', 'SudanCareNurse2026!', 'nurse'),
-            ('doctor', 'SudanCareDoctor2026!', 'doctor'),
-            ('laboratory', 'SudanCareLab2026!', 'laboratory'),
-            ('radiology', 'SudanCareRadiology2026!', 'radiology'),
-            ('pharmacist', 'SudanCarePharmacy2026!', 'pharmacist'),
-            ('cashier', 'SudanCareCashier2026!', 'cashier'),
-        ]
+        demo_accounts = [('admin','SudanCareAdmin2026!','clinic_admin'),('reception','SudanCareReception2026!','receptionist'),('nurse','SudanCareNurse2026!','nurse'),('doctor','SudanCareDoctor2026!','doctor'),('laboratory','SudanCareLab2026!','laboratory'),('radiology','SudanCareRadiology2026!','radiology'),('pharmacist','SudanCarePharmacy2026!','pharmacist'),('cashier','SudanCareCashier2026!','cashier')]
         with db() as conn:
-            for username, password, role in demo_accounts:
-                if not conn.execute('SELECT 1 FROM users WHERE username=?', (username,)).fetchone():
-                    conn.execute('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)', (new_id(), username, password_hash(password), role, 1, 0, None, now()))
+            for username,password,role in demo_accounts:
+                if not conn.execute('SELECT 1 FROM users WHERE username=?',(username,)).fetchone():
+                    conn.execute('INSERT INTO users VALUES(?,?,?,?,?,?,?,?)',(new_id(),username,password_hash(password),role,1,0,None,now()))
 
 def auth(request: Request, roles=None):
     user=actor(request.cookies.get('sc_session'))
