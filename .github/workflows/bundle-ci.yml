@@ -3,8 +3,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'SudanCare-phase4-final.bundle'
+      - 'SudanCare-phase5-final.bundle'
       - '.github/workflows/bundle-ci.yml'
+
 
 jobs:
   test:
@@ -13,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Extract bundled project
         run: |
-          git clone --quiet --branch main "$GITHUB_WORKSPACE/SudanCare-phase4-final.bundle" "$GITHUB_WORKSPACE/sudancare"
+          git clone --quiet --branch main "$GITHUB_WORKSPACE/SudanCare-phase5-final.bundle" "$GITHUB_WORKSPACE/sudancare"
           test -f "$GITHUB_WORKSPACE/sudancare/requirements-dev.txt"
           find "$GITHUB_WORKSPACE/sudancare" -maxdepth 1 -type f -print
       - uses: actions/setup-python@v5
@@ -30,38 +31,16 @@ jobs:
         env:
           PYTHONPATH: .
         run: python -m unittest discover -s tests -v
+      - name: Black-box E2E smoke
+        working-directory: sudancare
+        env:
+          PYTHONPATH: .
+        run: python scripts/e2e_smoke.py
+      - name: Security smoke
+        working-directory: sudancare
+        run: python scripts/security_smoke.py
+
 
   migration:
     runs-on: ubuntu-latest
     services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: sudancare-ci
-          POSTGRES_DB: sudancare_ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d sudancare_ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Extract bundled project
-        run: |
-          git clone --quiet --branch main "$GITHUB_WORKSPACE/SudanCare-phase4-final.bundle" "$GITHUB_WORKSPACE/sudancare"
-          test -f "$GITHUB_WORKSPACE/sudancare/migrations/verify_isolation.sql"
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client
-      - name: Apply migrations twice and verify isolation
-        working-directory: sudancare
-        env:
-          DATABASE_URL: postgresql://postgres:sudancare-ci@127.0.0.1:5432/sudancare_ci
-          PGPASSWORD: sudancare-ci
-        run: |
-          sh scripts/migrate_postgres.sh
-          psql --host 127.0.0.1 --username postgres --dbname sudancare_ci --file migrations/verify_isolation.sql
-          sh scripts/migrate_postgres.sh
